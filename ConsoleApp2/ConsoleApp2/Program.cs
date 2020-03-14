@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Linq;
 using System.Collections;
@@ -14,7 +14,7 @@ namespace ConsoleApp2
         {
             DataTable dt = new DataTable();
 
-            using (SpreadsheetDocument spreadSheetDocument = SpreadsheetDocument.Open(@"C:\\Users\\OkSta\\Downloads\\Personal\\Finances\\Balances.xlsx", false))
+            using (SpreadsheetDocument spreadSheetDocument = SpreadsheetDocument.Open(@"C:\\Users\\OkSta\\Downloads\\Book1.xlsx", false))
             {
 
                 WorkbookPart workbookPart = spreadSheetDocument.WorkbookPart;
@@ -34,9 +34,9 @@ namespace ConsoleApp2
                 {
                     DataRow tempRow = dt.NewRow();
 
-                    for (int i = 1; i < row.Descendants<Cell>().Count(); i++)
+                    for (int i = 0; i < row.Descendants<Cell>().Count(); i++)
                     {
-                        tempRow[i] = GetCellValue(spreadSheetDocument, row.Descendants<Cell>().ElementAt(i - 1));
+                        tempRow[i] = GetCellValue(spreadSheetDocument, row.Descendants<Cell>().ElementAt(i));
                     }
 
                     dt.Rows.Add(tempRow);
@@ -44,9 +44,10 @@ namespace ConsoleApp2
 
             }
             dt.Rows.RemoveAt(0); //...so i'm taking it out here.
+
             foreach (DataRow row in dt.Rows)
             {
-                string name = row["Amount_Owed"].ToString();
+                string name = row["Yes"] + "";
 
                 Console.WriteLine(name);
             }
@@ -55,17 +56,21 @@ namespace ConsoleApp2
 
         public static string GetCellValue(SpreadsheetDocument document, Cell cell)
         {
-            SharedStringTablePart stringTablePart = document.WorkbookPart.SharedStringTablePart;
-            string value = cell.CellValue.InnerXml;
+            if (cell != null)
+            {
+                SharedStringTablePart stringTablePart = document.WorkbookPart.SharedStringTablePart;
+                string value = cell.CellValue.InnerXml;
 
-            if (cell.DataType != null && cell.DataType.Value == CellValues.SharedString)
-            {
-                return stringTablePart.SharedStringTable.ChildElements[Int32.Parse(value)].InnerText;
+                if (cell.DataType != null && cell.DataType.Value == CellValues.SharedString)
+                {
+                    return stringTablePart.SharedStringTable.ChildElements[Int32.Parse(value)].InnerText;
+                }
+                else
+                {
+                    return value;
+                }
             }
-            else
-            {
-                return value;
-            }
+            return "ERROR: Cell is null";
         }
     }
 }
